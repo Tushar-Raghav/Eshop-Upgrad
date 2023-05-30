@@ -68,6 +68,7 @@ async function deleteProduct(req, res) {
         const product = await Product.findByIdAndDelete(req.params.id);
         if(!product) {
             res.status(404).send(`Product with id ${req.params.mentorId} not found`);
+            console.log('successful')
             return;
         }
 

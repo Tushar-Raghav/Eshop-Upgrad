@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "../../common/header/Header";
 import axios from "axios";
 import { useEffect } from "react";
@@ -20,7 +20,8 @@ import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import './Product.css'
-
+import ProductCard from "../productcard/ProductCard";
+import ImageList from '@mui/material/ImageList';
 const style = {
   position: "absolute",
   left: "35%",
@@ -30,7 +31,7 @@ const style = {
   boxShadow: 24,
   p: 2,
   height:'95%',
-  marginTop:'2%',
+  marginTop:'1%',
 };
 function Copyright(props) {
   return (
@@ -51,31 +52,74 @@ function Copyright(props) {
 }
 const defaultTheme = createTheme();
 function Products() {
+  let token = localStorage.getItem('token')
   const [age, setAge] = React.useState('');
-
+  const [products,showProducts]=useState([])
   const handleChange = (event) => {
     setAge(event.target.value);
   };
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSubmit = async (event) => {};
   const url = "http://localhost:3001/api/v1/products";
   async function fetchProducts() {
     let res = await axios.get(url);
-    console.log(res.data);
+    let obj = res.data;
+    let arrProducts=obj.map((item,index)=>{
+      console.log('key is  > '+ item._id)
+        return <ProductCard click={deleteProduct} name={item.name} id = {item._id} key={index} desc={item.description} imgUrl={item.imageURL} price={item.price}/>
+    })
+    showProducts([...arrProducts])
+  }
+  async function deleteProduct(key){
+    let dltURL = `http://localhost:3001/api/v1/products/${key}`
+    let res = await axios.delete(dltURL,{
+      headers: {
+        'x-auth-token': `${token}`,
+      }
+    })
+    console.log(res.data)
+    window.location.reload()
   }
   useEffect(() => {
     fetchProducts();
   }, []);
-  const handleProduct=(event)=>{
+  const handleProduct= async (event)=>{
+    event.preventDefault();
     const data = new FormData(event.currentTarget);
-    let name=data.get('productName')
-    let categories=data.get('categories')
+    console.log('in handle submit')
+    let currName=data.get('productName')
+    let currCategories=data.get('categories')
+    let currPrice = data.get('price')
+    let currDescription = data.get('productDesc')
+    let currManufacturer = data.get('manufacturer')
+    let currItemAvailablity = data.get('itemAvailablity')
+    let currImageURL = data.get('imageURL')
+    let obj={name:currName,
+      category:currCategories,
+      price:currPrice,
+      description:currDescription,
+      manufacture:currManufacturer,
+      availableItems:currItemAvailablity,
+      imageURL:currImageURL,}
+      console.log(obj)
+   try{
+    let res= await axios.post(url,JSON.stringify(obj),{headers:{
+      "content-type":"application/json",
+      'x-auth-token': `${token}`,
+    }})
+   }catch(err){
+    console.log('err > '+err)
+   }
+   handleClose()
+   window.location.reload()
   }
   return (
     <div>
       <Header click={handleOpen} role={localStorage.getItem("role")} />
+      <ImageList sx={{ width: '80%', height: '100%' ,ml:'18%',}} cols={3} rowHeight={164}>
+      {products}
+      </ImageList>
       <Modal
         open={open}
         onClose={handleClose}
@@ -100,7 +144,7 @@ function Products() {
                 <Typography component="h1" variant="h5">
                   Add Product
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Box component="form" sx={{ mt: 3 }} onSubmit={handleProduct}>
                   <Grid container spacing={1}>
                     <Grid item xs={12} sm={6}>
                       <TextField
@@ -164,8 +208,8 @@ function Products() {
                         name="imageURL"
                         label="imageURL"
                         type="url"
-                        id="manufacturer"
-                        autoComplete="manufacturer"
+                        id="imageURL"
+                        autoComplete="imageURL"
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -180,7 +224,7 @@ function Products() {
                       />
                     </Grid>
                     <Grid item xs={12}>
-                      <textarea id="productDesc" rows={6} cols={45}></textarea>
+                      <textarea id="productDesc" name='productDesc' rows={6} cols={45}></textarea>
                     </Grid>
                   </Grid>
                   <Button
@@ -188,7 +232,6 @@ function Products() {
                     fullWidth
                     variant="contained"
                     sx={{ mt: 3, mb: 2 }}
-                    onSubmit={handleProduct}
                   >
                     Add Product
                   </Button>

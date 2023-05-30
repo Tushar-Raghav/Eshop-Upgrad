@@ -31,15 +31,13 @@ async function signIn(req, res) {
     name: `${user.firstName} ${user.lastName}`,
     email: user.email,
     role:user.role,
+    userToken:token,
     isAuthenticated: true,
   });
 }
 
 async function signUp(req, res) {
-  console.log("req body -> "+req.body)
-  console.log("validate fun result -> "+validateUser(req.body))
   const { error } = validateUser(req.body);
-  console.log("signup -> "+error)
   if (error) {
     return res.status(400).send(`Bad Request ${error}`);
   }

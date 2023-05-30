@@ -54,7 +54,6 @@ const validateUser = (user) => {
   });
 
   const validationResult = userSchema.validate(user);
-  console.log("inside modals -> "+validationResult)
   return validationResult;
 };
 
