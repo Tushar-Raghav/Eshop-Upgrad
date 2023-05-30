@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import Header from "../../common/header/Header";
-import axios from "axios";
-import { useEffect } from "react";
+import axios from 'axios'
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -19,125 +18,52 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import './Product.css'
-import ProductCard from "../productcard/ProductCard";
-import ImageList from '@mui/material/ImageList';
-import { useNavigate } from "react-router-dom";
-const style = {
-  position: "absolute",
-  left: "35%",
-  width: '30%',
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 2,
-  height:'95%',
-  marginTop:'1%',
-};
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-const defaultTheme = createTheme();
-function Products() {
-  
-  const navigate = useNavigate()
-  let token = localStorage.getItem('token')
-  const [age, setAge] = React.useState('');
-  const [products,showProducts]=useState([])
-  const handleChange = (event) => {
-    setAge(event.target.value);
-  };
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const url = "http://localhost:3001/api/v1/products";
-  async function fetchProducts() {
-    let res = await axios.get(url);
-    let obj = res.data;
-    let arrProducts=obj.map((item,index)=>{
-      console.log('key is  > '+ item._id)
-        return <ProductCard dltClick={deleteProduct} navToProduct={navigateProduct} name={item.name} id = {item._id} key={index} desc={item.description} imgUrl={item.imageURL} price={item.price}/>
-    })
-    showProducts([...arrProducts])
-  }
-  async function deleteProduct(key){
-    let dltURL = `http://localhost:3001/api/v1/products/${key}`
-    let res = await axios.delete(dltURL,{
-      headers: {
-        'x-auth-token': `${token}`,
-      }
-    })
-    console.log(res.data)
-    window.location.reload()
-  }
-  function navigateProduct(id){
-    navigate(`/Products/${id}`)
-  }
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-  const handleProduct= async (event)=>{
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log('in handle submit')
-    let currName=data.get('productName')
-    let currCategories=data.get('categories')
-    let currPrice = data.get('price')
-    let currDescription = data.get('productDesc')
-    let currManufacturer = data.get('manufacturer')
-    let currItemAvailablity = data.get('itemAvailablity')
-    let currImageURL = data.get('imageURL')
-    let obj={name:currName,
-      category:currCategories,
-      price:currPrice,
-      description:currDescription,
-      manufacture:currManufacturer,
-      availableItems:currItemAvailablity,
-      imageURL:currImageURL,}
-      console.log(obj)
-   try{
-    let res= await axios.post(url,JSON.stringify(obj),{headers:{
-      "content-type":"application/json",
-      'x-auth-token': `${token}`,
-    }})
-   }catch(err){
-    console.log('err > '+err)
-   }
-   handleClose()
-   window.location.reload()
-  }
-  return (
-    <div>
-      <Header click={handleOpen} role={localStorage.getItem("role")} />
-      <ImageList
-        sx={{ width: "80%", height: "100%", ml: "18%" }}
-        cols={3}
-        rowHeight={164}
+
+  function Copyright(props) {
+    return (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        align="center"
+        {...props}
       >
-        {products}
-      </ImageList>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <ThemeProvider theme={defaultTheme}>
+        {"Copyright © "}
+        <Link color="inherit" href="https://mui.com/">
+          Your Website
+        </Link>{" "}
+        {new Date().getFullYear()}
+        {"."}
+      </Typography>
+    );
+  }
+function Product() {
+    const { id }  = useParams() 
+    const [age, setAge] = React.useState('');
+    const [name,setName] = useState('');
+    const [desc,setDesc] = useState('');
+    const [price,setPrice] = useState('');
+    const [itemAvailablity,setItemAvailablity] = useState('');
+    const [manufacturer,setManufacturer] = useState('');
+    const role=localStorage.getItem('role')
+    const url =`http://localhost:3001/api/v1/products/${id}`
+    const handleChange = (event) => {
+        setAge(event.target.value);
+      };
+     
+    async function fetchProduct(){
+        try{
+            const response = await axios.get(url)
+        console.log(response.data)
+        setData(response.data)
+        }catch(err){
+            console.log('err in fetch product > '+err)
+        }
+    }
+    useEffect(()=>{
+        fetchProduct()
+    },[])
+    if(role=='admin'){
+        return(
             <Container component="main" maxWidth="xs">
               <CssBaseline />
               <Box
@@ -154,19 +80,21 @@ function Products() {
                 <Typography component="h1" variant="h5">
                   Add Product
                 </Typography>
-                <Box component="form" sx={{ mt: 3 }} onSubmit={handleProduct}>
+                <Box component="form" sx={{ mt: 3 }}>
                   <Grid container spacing={1}>
                     <Grid item xs={12} sm={6}>
+                      <FormControl>
                       <TextField
-                        autoComplete="given-name"
+                        autoComplete="productName"
                         name="productName"
                         required
                         fullWidth
                         id="productName"
                         label="Product Name"
-                        inputProps={{ maxLength: 50, minLength: 5 }}
-                        autoFocus
+                        onChange={(e)=>{}}
+                        focused
                       />
+                      </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <FormControl fullWidth>
@@ -240,7 +168,7 @@ function Products() {
                         id="productDesc"
                         name="productDesc"
                         rows={6}
-                        cols={45}
+                        cols={52}
                       ></textarea>
                     </Grid>
                   </Grid>
@@ -256,11 +184,15 @@ function Products() {
               </Box>
               <Copyright sx={{ mt: 2 }} />
             </Container>
-          </ThemeProvider>
-        </Box>
-      </Modal>
+        )
+    }else if(role=='user'){
+        
+  return (
+    <div>
+      Product id {id}
     </div>
-  );
+  )
+    }
 }
 
-export default Products;
+export default Product

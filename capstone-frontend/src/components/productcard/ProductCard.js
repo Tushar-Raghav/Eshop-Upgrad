@@ -4,9 +4,9 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-
 export default function ProductCard(props) {
   const role = localStorage.getItem("role");
+  
   if (role == "admin") {
     return (
       <Card sx={{ maxWidth: 345,height:480,pt:2,mb:3 , border: "2px solid orange" }}>
@@ -20,8 +20,8 @@ export default function ProductCard(props) {
           </Typography>
         </CardContent>
         <CardActions>
-          <Button onClick={()=>{props.click(props.id)}} size="small">Delete</Button>
-          <Button size="small">Modify</Button>
+          <Button onClick={()=>{props.dltClick(props.id)}} size="small">Delete</Button>
+          <Button onClick={()=>{props.navToProduct(props.id)}} size="small">Modify</Button>
         </CardActions>
       </Card>
     );
