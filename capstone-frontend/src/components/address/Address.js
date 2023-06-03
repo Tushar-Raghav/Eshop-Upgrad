@@ -103,23 +103,6 @@ export default function SignUp() {
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
-                  autoComplete="given-name"
-                  name="id"
-                  required
-                  fullWidth
-                  id="user"
-                  label="id"
-                  defaultValue={id}
-                  onKeyDown={handleKeyDown}
-                  inputProps={{
-                    maxLength: 255,
-                    minLength: 5,
-                  }}
-                  autoFocus
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
                   required
                   fullWidth
                   id="name"
