@@ -292,7 +292,7 @@ function Header(props) {
           </ToggleButtonGroup>
         </List>
         <Divider />
-        <FormControl sx={{width:'20ch',mt:2}}>
+        {/* <FormControl sx={{width:'20ch',mt:2}}>
           <InputLabel id="demo-simple-select-label">Categories</InputLabel>
           <Select
             name="categories"
@@ -303,7 +303,7 @@ function Header(props) {
           >
             {}
           </Select>
-        </FormControl>
+        </FormControl> */}
       </div>
     );
 
