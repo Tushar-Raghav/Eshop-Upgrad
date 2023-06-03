@@ -61,15 +61,27 @@ function Products() {
   const handleChange = (event) => {
     setAge(event.target.value);
   };
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [openProduct, setOpenProduct] = React.useState(false);
+  const [openAddress, setOpenAddress] = React.useState(false);
+  const handleOpenProductModal = () => setOpenProduct(true);
+  const handleCloseProductModal = () => setOpenProduct(false);
+  const handleOpenAddressModal = () => setOpenAddress(true);
+  const handleCloseAddressModal = () => setOpenAddress(false);
   const url = "http://localhost:3001/api/v1/products";
   async function fetchProducts() {
     let res = await axios.get(url);
     let obj = res.data;
+    let filter=localStorage.getItem('filter')
+    if(filter=='low-to-high'){
+      obj=obj.sort((one,two)=>one.price-two.price)
+    }else if(filter=='high-to-low'){
+      obj=obj.sort((one,two)=>two.price-one.price)
+    }else if(filter=='newest'){
+      obj=obj.sort((one,two)=>new Date(two.date) - new Date(one.date))
+    }else{
+      obj=obj.reverse()
+    }
     let arrProducts=obj.map((item,index)=>{
-      console.log('key is  > '+ item._id)
         return <ProductCard dltClick={deleteProduct} navToProduct={navigateProduct} name={item.name} id = {item._id} key={index} desc={item.description} imgUrl={item.imageURL} price={item.price}/>
     })
     showProducts([...arrProducts])
@@ -89,7 +101,7 @@ function Products() {
   }
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [<Header/>]);
   const handleProduct= async (event)=>{
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -117,12 +129,49 @@ function Products() {
    }catch(err){
     console.log('err > '+err)
    }
-   handleClose()
+   handleCloseProductModal()
    window.location.reload()
+  }
+  const handleAddress= async (event)=>{
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    let currname=data.get('name')
+    let currcontactnumber=data.get('contactnumber')
+    let currcity = data.get('city')
+    let currlandmark = data.get('landmark')
+    let currstreet = data.get('street')
+    let currstate = data.get('state')
+    let currzipcode = data.get('zipcode')
+    if(currcontactnumber<1000000000 ||currcontactnumber> 99999999999){
+      alert("Not Valid Number")
+    }else if(currzipcode< 100000 || currzipcode>999999){
+      alert("Enter Valid ZipCode")
+    }else{
+      
+    let obj={name:currname,
+      contactNumber:currcontactnumber,
+      city:currcity,
+      landmark:currlandmark,
+      street:currstreet,
+      state:currstate,
+      zipCode:currzipcode,}
+      console.log(obj)
+   try{
+    let res= await axios.post("http://localhost:3001/api/v1/addresses",JSON.stringify(obj),{headers:{
+      "content-type":"application/json",
+      'x-auth-token': `${token}`,
+    }})
+    alert("Adress Add Successfully")
+   }catch(err){
+    console.log('err > '+err)
+   }
+   handleCloseAddressModal()
+   window.location.reload()
+    }
   }
   return (
     <div>
-      <Header click={handleOpen} role={localStorage.getItem("role")} />
+      <Header clickAddAddress={handleOpenAddressModal} clickAddProduct={handleOpenProductModal} role={localStorage.getItem("role")} />
       <ImageList
         sx={{ width: "80%", height: "100%", ml: "18%" }}
         cols={3}
@@ -131,8 +180,8 @@ function Products() {
         {products}
       </ImageList>
       <Modal
-        open={open}
-        onClose={handleClose}
+        open={openProduct}
+        onClose={handleCloseProductModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -251,6 +300,125 @@ function Products() {
                     sx={{ mt: 3, mb: 2 }}
                   >
                     Add Product
+                  </Button>
+                </Box>
+              </Box>
+              <Copyright sx={{ mt: 2 }} />
+            </Container>
+          </ThemeProvider>
+        </Box>
+      </Modal>
+      <Modal
+        open={openAddress}
+        onClose={handleCloseAddressModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <ThemeProvider theme={defaultTheme}>
+            <Container component="main" maxWidth="xs">
+              <CssBaseline />
+              <Box
+                sx={{
+                  marginTop: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+                  <AddShoppingCartIcon />
+                </Avatar>
+                <Typography component="h1" variant="h5">
+                  Add Address
+                </Typography>
+                <Box component="form" sx={{ mt: 3 }} onSubmit={handleAddress}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        autoComplete="name"
+                        name="name"
+                        required
+                        fullWidth
+                        id="name"
+                        label="Name"
+                        inputProps={{ maxLength: 50, minLength: 0 }}
+                        autoFocus
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                    <TextField
+                        autoComplete="contactnumbere"
+                        name="contactnumber"
+                        required
+                        fullWidth
+                        type="number"
+                        id="contactnumber"
+                        label="Contact Number"
+                        autoFocus
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="city"
+                        label="City"
+                        name="city"
+                        inputProps={{ maxLength: 50, minLength: 0 }}
+                        autoComplete="city"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        fullWidth
+                        name="landmark"
+                        label="Landmark"
+                        id="landmark"
+                        autoComplete="landmark"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        required
+                        fullWidth
+                        name="street"
+                        label="Street"
+                        type="name"
+                        id="street"
+                        autoComplete="street"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        required
+                        fullWidth
+                        name="state"
+                        label="State"
+                        type="name"
+                        id="state"
+                        autoComplete="state"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={12}>
+                      <TextField
+                        required
+                        fullWidth
+                        name="zipcode"
+                        label="Zip-Code"
+                        type="number"
+                        id="zipcode"
+                        autoComplete="zipcode"
+                      />
+                    </Grid>
+                  </Grid>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    sx={{ mt: 3, mb: 2 }}
+                  >
+                    Add Adsress
                   </Button>
                 </Box>
               </Box>

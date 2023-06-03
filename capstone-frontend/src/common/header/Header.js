@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -15,9 +15,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import { Button } from "@mui/material";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp"
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { useNavigate } from "react-router-dom";
-
+import { FormControl, Select, InputLabel } from "@mui/material";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -62,18 +65,35 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 const drawerWidth = 240;
 
+const ITEM_HEIGHT = 30;
 
 function Header(props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [alignment, setAlignment] = React.useState("web");
+  const [alignment, setAlignment] = React.useState("default");
+  const [age, setAge] = React.useState("");
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const openAnchor = Boolean(anchorEl);
+  const handleClickAnchor = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleCloseAnchor = () => {
+    setAnchorEl(null);
+  };
+  const handleChangeCategories = (event) => {
+    setAge(event.target.value);
+  };
 
   const handleChange = (event, newAlignment) => {
     setAlignment(newAlignment);
+    localStorage.setItem("filter", newAlignment);
   };
-  const navigate=useNavigate();
-  const handleLogOut=()=>{
-    navigate("/")
-  }
+  useEffect(()=>{
+    localStorage.setItem("filter", alignment);
+  },[alignment])
+  const navigate = useNavigate();
+  const handleLogOut = () => {
+    navigate("/");
+  };
   if (props.role == "user") {
     const { window } = props;
 
@@ -86,9 +106,7 @@ function Header(props) {
         <Toolbar />
         <Divider />
         <List>
-          <Typography>
-            Filter
-          </Typography>
+          <Typography>Filter</Typography>
           <ToggleButtonGroup
             color="primary"
             value={alignment}
@@ -120,11 +138,13 @@ function Header(props) {
             ml: { sm: `${drawerWidth}px` },
           }}
         >
-          <Toolbar  sx={{
-            width: { sm: `100%` },
-            display:"flex",
-            justifyContent:"space-between"
-          }}>
+          <Toolbar
+            sx={{
+              width: { sm: `100%` },
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -146,7 +166,52 @@ function Header(props) {
                 inputProps={{ "aria-label": "search" }}
               />
             </Search>
-            <Button variant="contained" color="secondary" endIcon={<ExitToAppIcon/>} onClick={handleLogOut}>Logout</Button>
+            
+            <div>
+              <IconButton
+                aria-label="more"
+                id="long-button"
+                aria-controls={openAnchor ? "long-menu" : undefined}
+                aria-expanded={openAnchor ? "true" : undefined}
+                aria-haspopup="true"
+                onClick={handleClickAnchor}
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id="long-menu"
+                MenuListProps={{
+                  "aria-labelledby": "long-button",
+                }}
+                anchorEl={anchorEl}
+                open={openAnchor}
+                onClose={handleCloseAnchor}
+                PaperProps={{
+                  style: {
+                    maxHeight: ITEM_HEIGHT * 4.5,
+                    width: "20ch",
+                  },
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    handleCloseAnchor();
+                    props.clickAddAddress();
+                  }}
+                >
+                  Add Address
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleCloseAnchor();
+                    handleLogOut();
+                  }}
+                >
+                  Logout
+                  <ExitToAppIcon />
+                </MenuItem>
+              </Menu>
+            </div>
           </Toolbar>
         </AppBar>
         <Box
@@ -199,7 +264,7 @@ function Header(props) {
         </Box>
       </Box>
     );
-  }else if(props.role=="admin"){
+  } else if (props.role == "admin") {
     const { window } = props;
 
     const handleDrawerToggle = () => {
@@ -211,9 +276,7 @@ function Header(props) {
         <Toolbar />
         <Divider />
         <List>
-          <Typography>
-            Filter
-          </Typography>
+          <Typography>Filter</Typography>
           <ToggleButtonGroup
             color="primary"
             value={alignment}
@@ -229,8 +292,18 @@ function Header(props) {
           </ToggleButtonGroup>
         </List>
         <Divider />
-        <Typography varient="h3" >Admin Settings</Typography>
-        <Button onClick={props.click} variant="text">Add Product</Button>
+        <FormControl sx={{width:'20ch',mt:2}}>
+          <InputLabel id="demo-simple-select-label">Categories</InputLabel>
+          <Select
+            name="categories"
+            id="demo-simple-select"
+            value={age}
+            label="Categories"
+            onChange={handleChangeCategories}
+          >
+            {}
+          </Select>
+        </FormControl>
       </div>
     );
 
@@ -247,11 +320,13 @@ function Header(props) {
             ml: { sm: `${drawerWidth}px` },
           }}
         >
-          <Toolbar  sx={{
-            width: { sm: `100%` },
-            display:"flex",
-            justifyContent:"space-between"
-          }}>
+          <Toolbar
+            sx={{
+              width: { sm: `100%` },
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -273,7 +348,51 @@ function Header(props) {
                 inputProps={{ "aria-label": "search" }}
               />
             </Search>
-            <Button variant="contained" color="secondary" endIcon={<ExitToAppIcon/>} onClick={handleLogOut}>Logout</Button>
+            <div>
+              <IconButton
+                aria-label="more"
+                id="long-button"
+                aria-controls={openAnchor ? "long-menu" : undefined}
+                aria-expanded={openAnchor ? "true" : undefined}
+                aria-haspopup="true"
+                onClick={handleClickAnchor}
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id="long-menu"
+                MenuListProps={{
+                  "aria-labelledby": "long-button",
+                }}
+                anchorEl={anchorEl}
+                open={openAnchor}
+                onClose={handleCloseAnchor}
+                PaperProps={{
+                  style: {
+                    maxHeight: ITEM_HEIGHT * 4.5,
+                    width: "20ch",
+                  },
+                }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    handleCloseAnchor();
+                    props.clickAddProduct();
+                  }}
+                >
+                  Add Product
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleCloseAnchor();
+                    handleLogOut();
+                  }}
+                >
+                  Logout
+                  <ExitToAppIcon />
+                </MenuItem>
+              </Menu>
+            </div>
           </Toolbar>
         </AppBar>
         <Box
@@ -326,7 +445,7 @@ function Header(props) {
         </Box>
       </Box>
     );
-  }else{
+  } else {
     const { window } = props;
 
     const handleDrawerToggle = () => {
@@ -338,9 +457,7 @@ function Header(props) {
         <Toolbar />
         <Divider />
         <List>
-          <Typography>
-            Filter
-          </Typography>
+          <Typography>Filter</Typography>
           <ToggleButtonGroup
             color="primary"
             value={alignment}
@@ -372,11 +489,13 @@ function Header(props) {
             ml: { sm: `${drawerWidth}px` },
           }}
         >
-          <Toolbar  sx={{
-            width: { sm: `100%` },
-            display:"flex",
-            justifyContent:"space-between"
-          }}>
+          <Toolbar
+            sx={{
+              width: { sm: `100%` },
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
             <IconButton
               color="inherit"
               aria-label="open drawer"

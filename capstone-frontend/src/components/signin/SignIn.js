@@ -57,6 +57,7 @@ export default function SignIn() {
     if(response.data.isAuthenticated){
       localStorage.setItem('role',response.data.role)
       localStorage.setItem('token',response.data.userToken)
+      localStorage.setItem('userId',response.data._id)
     navigate('/products')
     }
    }
